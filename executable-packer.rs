@@ -92,7 +92,10 @@ fn main() -> std::io::Result<()>  {
 
     // copy libs
 
-    copy_dependencies_into_folder(executable, folder_lib);
+    copy_dependencies_into_folder(
+        PathBuf::from(executable),
+        &folder_lib
+    );
 
     // return
 
@@ -100,7 +103,7 @@ fn main() -> std::io::Result<()>  {
 
 }
 
-fn copy_dependencies_into_folder(executable: &String, folder_deps: PathBuf) {
+fn copy_dependencies_into_folder(executable: PathBuf, folder_deps: &PathBuf) {
 
     // get libs used
 
@@ -143,14 +146,20 @@ fn copy_dependencies_into_folder(executable: &String, folder_deps: PathBuf) {
 
         println!("path: {}", path);
 
-        // copy libraries
+        // copy library
 
         let file_name = Path::new(path).file_name().unwrap();
 
-        let destination = folder_deps.join(file_name);
+        let lib_destination = folder_deps.join(file_name);
 
-        fs::copy(path, destination)
+        // TODO seems like this CAN overwrite files, so it's best to check the sha512 and make sure that the files being overwritten are actually the same
+        fs::copy(path, &lib_destination)
             .expect("could not copy library");
+
+        // resolve library reps
+        // libs SHOULD auto detect libs if they're in the same folder
+
+        copy_dependencies_into_folder(lib_destination, folder_deps);
     }
 
 }
