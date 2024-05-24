@@ -93,7 +93,7 @@ fn main() -> std::io::Result<()>  {
     // copy libs
 
     copy_dependencies_into_folder(
-        PathBuf::from(executable),
+        &PathBuf::from(executable),
         &folder_lib
     );
 
@@ -103,7 +103,7 @@ fn main() -> std::io::Result<()>  {
 
 }
 
-fn copy_dependencies_into_folder(executable: PathBuf, folder_deps: &PathBuf) {
+fn copy_dependencies_into_folder(executable: &PathBuf, folder_deps: &PathBuf) {
 
     // get libs used
 
@@ -142,24 +142,28 @@ fn copy_dependencies_into_folder(executable: PathBuf, folder_deps: &PathBuf) {
 
         assert!(right.chars().filter(|c| *c == ' ').count() == 1); // this will fail if there is space in th path
 
-        let path = right.split(" ").collect::<Vec<_>>()[0];
+        let lib_source = right.split(" ").collect::<Vec<_>>()[0];
 
-        println!("path: {}", path);
+        println!("lib_source: {}", lib_source);
 
         // copy library
 
-        let file_name = Path::new(path).file_name().unwrap();
+        let file_name = Path::new(lib_source).file_name().unwrap();
 
         let lib_destination = folder_deps.join(file_name);
 
+        if !lib_destination.exists() {
+            println!("file already exists: {}", lib_destination.display());
+        }
+
         // TODO seems like this CAN overwrite files, so it's best to check the sha512 and make sure that the files being overwritten are actually the same
-        fs::copy(path, &lib_destination)
+        fs::copy(lib_source, &lib_destination)
             .expect("could not copy library");
 
         // resolve library reps
         // libs SHOULD auto detect libs if they're in the same folder
 
-        copy_dependencies_into_folder(lib_destination, folder_deps);
+        copy_dependencies_into_folder(&lib_destination, folder_deps);
     }
 
 }
