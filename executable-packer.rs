@@ -1,4 +1,8 @@
 
+// INFO
+//
+// library preload: https://stackoverflow.com/questions/426230/what-is-the-ld-preload-trick
+
 use std::env;
 use std::path::Path;
 use std::fs;
