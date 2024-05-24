@@ -59,8 +59,8 @@ fn main() -> std::io::Result<()>  {
     // copy original executable
 
     {
-        // let destination = folder_original_executable.join(executable_file_name);
-        let destination = folder_original_executable.join("original_executable");
+        let destination = folder_original_executable.join(executable_file_name);
+        // let destination = folder_original_executable.join("original_executable");
 
         fs::copy(executable, destination)
             .expect("could not copy original executable");
@@ -78,9 +78,7 @@ fn main() -> std::io::Result<()>  {
         file.write_all(b"set -euo pipefail\n")?;
         file.write_all(b"HERE=$(dirname $(readlink -f \"$BASH_SOURCE\"))\n")?;
         file.write_all(b"PRELOAD=$(readlink -f \"$HERE/../lib\")\n")?;
-        // file.write_all(b"echo $HERE\n")?;
-        // file.write_all(b"echo $PRELOAD\n")?;
-        file.write_all(b"LD_LIBRARY_PATH=\"$PRELOAD\" \"$HERE/../original_executable/original_executable\" $@\n")?;
+        file.write_all( &format!("LD_LIBRARY_PATH=\"$PRELOAD\" \"$HERE/../original_executable/{}\" $@\n", executable_file_name.to_str().unwrap()).as_bytes() )?;
 
         // make file executable
 
