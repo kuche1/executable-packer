@@ -2,4 +2,6 @@
 
 set -euo pipefail
 
-rustc executable-packer.rs
+HERE=$(dirname $(readlink -f "$BASH_SOURCE"))
+
+rustc "$HERE/executable-packer.rs" -o "$HERE/executable-packer"

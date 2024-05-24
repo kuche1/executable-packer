@@ -5,6 +5,7 @@ use std::fs;
 use std::process::Command;
 use std::fs::File;
 use std::io::prelude::*;
+use std::path::PathBuf;
 
 fn main() -> std::io::Result<()>  {
 
@@ -89,6 +90,18 @@ fn main() -> std::io::Result<()>  {
             .expect("can't add executable permissions to file in bin folder");
     }
 
+    // copy libs
+
+    copy_dependencies_into_folder(executable, folder_lib);
+
+    // return
+
+    Ok(())
+
+}
+
+fn copy_dependencies_into_folder(executable: &String, folder_deps: PathBuf) {
+
     // get libs used
 
     let ldd_info = 
@@ -134,14 +147,10 @@ fn main() -> std::io::Result<()>  {
 
         let file_name = Path::new(path).file_name().unwrap();
 
-        let destination = folder_lib.join(file_name);
+        let destination = folder_deps.join(file_name);
 
         fs::copy(path, destination)
             .expect("could not copy library");
     }
-
-    // return
-
-    Ok(())
 
 }
