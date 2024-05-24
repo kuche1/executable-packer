@@ -33,7 +33,7 @@ fn main() -> std::io::Result<()>  {
     let folder_root = executable_file_name;
 
     fs::create_dir(folder_root)
-        .expect("could not create root folder");
+        .expect(&format!("could not create root folder `{}`", folder_root.to_str().unwrap()));
     
     // create bin folder
 
