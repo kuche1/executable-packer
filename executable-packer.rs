@@ -154,9 +154,12 @@ fn copy_dependencies_into_folder(executable: &PathBuf, folder_deps: &PathBuf) {
 
         if !lib_destination.exists() {
             println!("file already exists: {}", lib_destination.display());
+            if ! files_are_the_same_or_either_is_missing(Path::new(lib_source), lib_destination.as_path()) {
+                panic!("libraries `{}` and `{}` differ", lib_source, lib_destination.display());
+            }
         }
 
-        // TODO seems like this CAN overwrite files, so it's best to check the sha512 and make sure that the files being overwritten are actually the same
+        // this overwrites files, so we make sure that the files are the same beforehand
         fs::copy(lib_source, &lib_destination)
             .expect("could not copy library");
 
@@ -166,4 +169,40 @@ fn copy_dependencies_into_folder(executable: &PathBuf, folder_deps: &PathBuf) {
         copy_dependencies_into_folder(&lib_destination, folder_deps);
     }
 
+}
+
+use std::io::BufReader;
+fn files_are_the_same_or_either_is_missing(file1: &Path, file2: &Path) -> bool {
+
+    let f1 =
+        match File::open(file1) {
+            Ok(value) => value,
+            Err(_err) => return true,
+        };
+    // let f1 = File::open(file1).unwrap();
+
+    let f2 =
+        match File::open(file2) {
+            Ok(value) => value,
+            Err(_err) => return true,
+        };
+    // let f2 = File::open(file2).unwrap();
+
+    // Check if file sizes are different
+    if f1.metadata().unwrap().len() != f2.metadata().unwrap().len() {
+        return false;
+    }
+
+    // Use buf readers since they are much faster
+    let f1 = BufReader::new(f1);
+    let f2 = BufReader::new(f2);
+
+    // Do a byte to byte comparison of the two files
+    for (b1, b2) in f1.bytes().zip(f2.bytes()) {
+        if b1.unwrap() != b2.unwrap() {
+            return false;
+        }
+    }
+
+    return true;
 }
